@@ -181,7 +181,7 @@ def main():
     prompt_output_dir = Path(args.prompt_output_dir)
     baseline_output_dir = Path(args.baseline_output_dir)
 
-    top_k = 50  ### picking the top 100 ranked prompt outputs in the [MASK] position
+    top_k = 200  ### picking the top 100 ranked prompt outputs in the [MASK] position
 
     nlp, mask_token = initialize_lm(model_type, top_k)
     prob_threshold = 0.5  ### setting the baseline threshold to select the output tokens
@@ -190,7 +190,7 @@ def main():
     # sent = f"Is Apple owned by another company? {mask_token}."
     # sent = f"Is China a country? {mask_token}."
     # sent = f"Does Hyundai motor company have a parent company? {mask_token}."
-    sent = f"Danube river is in {mask_token}."
+    sent = f"Chris Sacca works at {mask_token}, which is a company."
     probe_outputs = nlp(sent)
     for out in probe_outputs:
         # if out['token_str'] in ['state', 'province', 'region', 'city', 'municipality', 'territory']:

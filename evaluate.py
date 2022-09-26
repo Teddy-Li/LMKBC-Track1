@@ -32,9 +32,13 @@ def is_none_preds(preds: List[str]) -> bool:
     """
     Checks if the prediction object is none (with relaxing rules).
     """
-    return preds is None or len(preds) == 0 or (len(preds) == 1 and (
-            list(preds)[0].lower() in {"", "none", "null"} or
-            list(preds)[0] is None))
+    return preds is None or len(preds) == 0 or (
+            len(preds) == 1 and
+            (
+                    list(preds)[0] is None or
+                    list(preds)[0].lower() in {"", "none", "null"}
+            )
+    )
 
 
 def true_positives(preds: List[str], gts: List[List[str]]) -> int:
@@ -76,6 +80,10 @@ def precision(preds: List[str], gts: List[List[str]]) -> float:
         precision: float
     """
 
+    # when nothing is predicted, precision 1 irrespective of the ground truth value
+    if is_none_preds(preds):
+        return 1
+
     # When the ground truth object is none
     if is_none_gts(gts):
         return 1.0 if is_none_preds(preds) else 0.0
@@ -83,7 +91,7 @@ def precision(preds: List[str], gts: List[List[str]]) -> float:
     # When the ground truth object is not none
     try:
         return min(true_positives(preds, gts) / len(preds), 1.0)
-    except (ZeroDivisionError, TypeError):
+    except TypeError:
         return 0.0
 
 
@@ -100,9 +108,9 @@ def recall(preds: List[str], gts: List[List[str]]) -> float:
         recall: float
     """
 
-    # When the ground truth object is none
+    # When the ground truth object is none return 1 even if there are predictions (edge case)
     if is_none_gts(gts):
-        return 1.0 if is_none_preds(preds) else 0.0
+        return 1.0
 
     # When the ground truth object is not none
     try:
@@ -111,7 +119,7 @@ def recall(preds: List[str], gts: List[List[str]]) -> float:
         return 0.0
 
 
-def f1_score(p: float, r: float) -> float:
+def f_beta_score(p: float, r: float, beta: float = 1) -> float:
     """
     Calculates the F1-score of the predictions
     for a given pair of subject and relation.
@@ -123,9 +131,9 @@ def f1_score(p: float, r: float) -> float:
     Returns:
         f1_score: float
     """
-
+    assert beta != 0
     try:
-        return (2 * p * r) / (p + r)
+        return ((1 + beta*beta) * p * r) / (beta*beta*p + r)
     except ZeroDivisionError:
         return 0.0
 
@@ -139,10 +147,8 @@ def rows_to_dict(rows: List[Dict]) -> Dict:
             rows}
 
 
-def evaluate_per_sr_pair(predictions_fp, ground_truth_fp) \
+def evaluate_per_sr_pair(pred_rows, gt_rows, beta=1.0) \
         -> List[Dict[str, float]]:
-    pred_rows = read_lm_kbc_jsonl(predictions_fp)
-    gt_rows = read_lm_kbc_jsonl(ground_truth_fp)
 
     pred_dict = rows_to_dict(pred_rows)
     gt_dict = rows_to_dict(gt_rows)
@@ -162,7 +168,7 @@ def evaluate_per_sr_pair(predictions_fp, ground_truth_fp) \
         # calculate the scores
         p = precision(preds, gts)
         r = recall(preds, gts)
-        f1 = f1_score(p, r)
+        f1 = f_beta_score(p, r, beta=beta)
 
         results.append({
             "SubjectEntity": subj,
@@ -218,11 +224,14 @@ def main():
         required=True,
         help="Path to the ground truth file (required)"
     )
+    parser.add_argument('--beta', type=float, default=1.0)
 
     args = parser.parse_args()
 
-    scores_per_sr_pair = evaluate_per_sr_pair(args.predictions,
-                                              args.ground_truth)
+    pred_rows = read_lm_kbc_jsonl(args.predictions)
+    gt_rows = read_lm_kbc_jsonl(args.ground_truth)
+
+    scores_per_sr_pair = evaluate_per_sr_pair(pred_rows, gt_rows, beta=args.beta)
     scores_per_relation = combine_scores_per_relation(scores_per_sr_pair)
 
     scores_per_relation["***Average***"] = {

@@ -20,7 +20,7 @@ def read_lm_kbc_jsonl(file_path: Union[str, Path]) -> List[Dict]:
             None or List[List[str]] (can be omitted for the test input)
     """
     rows = []
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding='utf8') as f:
         for line in f:
             row = json.loads(line)
             rows.append(row)

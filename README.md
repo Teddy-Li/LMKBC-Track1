@@ -1,56 +1,30 @@
-## Knowledge Base Construction from Pre-trained Language Models (LM-KBC)
+## Overview
 
-Dataset for the LM-KBC challenge at ISWC 2022
+Below are the scripts to train / run different modules of the system. The key component of task-specific pre-training goes 
+under the section of MLM pre-training. Note that for information security reasons we are not yet able to upload the pre-trained
+model checkpoints to network hard drives such as Dropbox at this stage; model checkpoints can be re-trained via the scripts provided below, please also check the arguments in the python files for more options, and the report for hyper-parameter settings; model checkpoints will be released shortly, subject to approval from internal information security checks. 
 
-### Download the data
+## Trial 1.2 
 
-```
-wget https://github.com/lm-kbc/dataset/zipball/master.zip
-unzip master.zip
-cd lm-kbc*
-```
+### Threshold Searching (thresholds and sticky_ratios)
+- python trial_1_2.py --version trial_1.2_blc --job_name search_thres --subset train --comments _withsoftmax_multilm --use_softmax 1 --gpu 0 \
+  --prompt_esb_mode cmb
 
-### Usage
+### Single Run
+- python trial_1_2.py --version trial_1.2_blc --job_name run_single --subset dev --comments _withsoftmax_multilm --use_softmax 1 --gpu 0
 
-```
-pip install -r requirements.txt
-```
+## MLM Training
 
-To run the baseline script:
+### Data Collection
 
-```
-python baseline.py [-h] [--model_type MODEL_TYPE] [--input_dir INPUT_DIR] 
-                  [--prompt_output_dir PROMPT_OUTPUT_DIR] 
-                  [--baseline_output_dir BASELINE_OUTPUT_DIR]
+- python train_mlm.py --job_name collect_data --model_name ../lms/bert-large-cased --top_k 100 \
+  --collect_data_gpu_id 0 --use_softmax --prompt_style trial --use_softmax \
+  --thresholds_fn_feat trial_1.2_blc_withsoftmax
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --model_type MODEL_TYPE
-                        HuggingFace model name
-  --input_dir INPUT_DIR
-                        input directory containing the subject-entities for each relation 
-                        to probe the language model
-  --prompt_output_dir PROMPT_OUTPUT_DIR
-                        output directory to store the prompt output
-  --baseline_output_dir BASELINE_OUTPUT_DIR
-                        output directory to store the baseline output
-```
+### Training
+- python train_mlm.py --job_name train --model_name ../lms/bert-large-cased --data_mode development \
+  --lr 5e-6 --num_epochs 10 --extend_len 0 --comment _lr5e-6_10_0  (Current best setting: _lr5e-6_10_0, next best _lr5e-6_10_2;)
+- python train_mlm.py --job_name train --model_name ../lms/bert-large-cased --data_mode silver_B \
+  --lr 5e-6 --num_epochs 5 --extend_len 0 --data_suffix _trial_1.2_blc_withsoftmax \
+  --comment _lr5e-6_10_0 --silver_data_size XXX (--concentrated_rels XXX)
 
-To run the evaluation script:
-
-```
-python evaluate.py [-h] [--input_dir INPUT_DIR] [--ground_truth_dir GROUND_TRUTH_DIR] 
-                  [--results_dir RESULTS_DIR]
-                  
-optional arguments:
-  -h, --help            show this help message and exit
-  --input_dir INPUT_DIR
-                        input directory containing the baseline or your method output
-  --ground_truth_dir GROUND_TRUTH_DIR
-                        ground truth directory containing true object-entities for the 
-                        subject-entities for which the LM was probed and then baseline 
-                        or your method was applied
-  --results_dir RESULTS_DIR
-                        results directory for storing the F1 scores for baseline or your 
-                        method
-```
