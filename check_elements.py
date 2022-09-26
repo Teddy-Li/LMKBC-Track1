@@ -1,4 +1,9 @@
+"""
+Verifies that all answers to ChemicalCompoundElement are indeed chemical elements.
+"""
+
 import json
+
 
 all_elements = ['hydrogen', 'helium', 'lithium', 'beryllium', 'boron', 'carbon', 'nitrogen', 'oxygen', 'fluorine', 'neon',
                     'sodium', 'magnesium', 'aluminium', 'silicon', 'phosphorus', 'sulfur', 'chlorine', 'argon', 'potassium', 'calcium',
