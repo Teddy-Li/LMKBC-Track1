@@ -1266,7 +1266,8 @@ def main():
         best_thresholds, best_sticky_ratios, assemble_best_numprompts, best_results, best_scores_idxes = \
             search_best_thresholds(model_names, MODELIDS_REL_MAPPING, args.input, args.top_k, args.gpu_id,
                                     args.use_softmax, prompt_creator=prompt_creator, tagger_isalive_res_fn=args.isalive_res_fn,
-                                    tagger_isindep_res_fn=args.isindep_res_fn, beta=args.beta, search_sticky=args.search_sticky) # args.exit_criterion)
+                                    tagger_isindep_res_fn=args.isindep_res_fn, beta=args.beta, search_sticky=args.search_sticky)
+        # args.exit_criterion)
 
         with open(args.threshold_fn, 'w', encoding='utf8') as tfp:
             metadata = {

@@ -47,16 +47,17 @@ There are the following relevant arguments worth mentioning:
 - `--raw_model`: the default model to use when no other per-relation models are specified;
 - `--version`: the version of current experiment;
 - `--job_name`: one of the above four jobs to add;
-- `--subset`: ?;
-- `--comments`: ?;
+- `--subset`: the subset to search_threshold / run_inference on (\[ train / dev / test \]);
+- `--comments`: other comments / flags to pass along the pipeline;
 - `--top_k`: the maximum number of prompt outputs to consider;
 - `--threshold_fn`: path to the threshold file (see default);
 - `--use_softmax`: whether to use softmax for the prompt outputs or remove it;
 - `--exit_criterion`: the minimum scale of improvement by which we consider one method / hyper-parameter to be superior to another;
-- `--relaxed_thres`: ?;
+- `--relaxed_thres`: ratio by which to relax thresholds to allow for more answers (used only in conjunction with re-ranking);
 - `--beta`: the beta parameter for the F1 score;
 - `--search_sticky`: whether to search for sticky-ratios or keep them 0;
-- `--prompt_esb_mode`: ?;
+- `--prompt_esb_mode`: \[ cmb / rpc \], whether to join the retrieved prompts from previous work and our retrieval or to use 
+only the prompts from previous work when they are available;
 - `--lw_XX`: these are hyper-parameters for prompt-weight learner;
 
 For our main results we do not use the prompt-weight learner, so we only do `search_thres` and `run_single` jobs.
@@ -108,7 +109,7 @@ files such as *data/dev2_mlm_trial_1.2_cmbmined_blc_joint2_withsoftmax_whatcmb.j
      - `silver_B` means using silver and gold training data jointly, with dev2 set as dev for golds;
      - `silver_C` means using silver and gold training data jointly, with entire dev set as dev for golds;
    - The `--extend_len` option is for extending the sizes of MASKS in the MLM task, from the object tokens themselves to the tokens surrounding the object tokens;
-7. The MLM-trained checkpoints are then used in the place of BERT-large-cased 
+7. The MLM-trained checkpoints are then used as the LM-backbone for prompting.
 
 ### For Prompt Retrieval / Selection
 
