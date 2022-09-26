@@ -87,11 +87,11 @@ isalive / isindep classifiers (see Section X below).
 1. Gather knowledge triples for the respective relations from WikiData [here](https://query.wikidata.org/), and store them under 
 *additional_data/*, with the following naming convention: *additional_data/RELATION.json* (our augmentations are readily available);
 2. Run *organize_added_data.py* to filter out infelicitous entries and organize the remaining entries in *silver_train_XX.json* files, 
-under *data/*;
+under *data/* (readily available);
 3. (optional) Run *count_mlm_lines_per_rel_silver.py* to check the number of subject-object pairs per relation in the augmented silver knowledge triples;
 4. (optional) If you want to use the prompts mined from Wikipedia, run *prompt-selection* first to find out the set of prompts to check (See section X below);
-5. Run `collect_data` task in *train_mlm.py* to gather the data for MLM training; during this process, duplicate entries between
-augmented entries and any subset of the original training data are removed, and the remaining entries are stored in 
+5. Run `collect_data` task in *train_mlm.py* to gather the data for MLM training; **during this process, duplicate entries between
+augmented entries and any subset of the original training data are removed**, and the remaining entries are stored in 
 files such as *data/dev2_mlm_trial_1.2_cmbmined_blc_joint2_withsoftmax_whatcmb.jsonl*; Example script: `python train_mlm.py --job_name collect_data --model_name ../lms/bert-large-cased --top_k 100 \
   --collect_data_gpu_id 0 --use_softmax --prompt_style trial --use_softmax \
   --thresholds_fn_feat trial_1.2_blc_withsoftmax`;
